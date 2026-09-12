@@ -27,7 +27,7 @@ jobs:
           cache: 'npm'       # Automatically caches your npm dependencies
 
       - name: BUILD 
-        run: npm install 
+        run: npm ci 
 
       - name: TEST 
         run: echo "code is tested!" 
