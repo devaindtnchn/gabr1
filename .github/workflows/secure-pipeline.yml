@@ -38,6 +38,15 @@ jobs:
           node -e "require('./package.json')"
           echo "✓ package.json is valid"
 
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            
+
       - name: Install Dependencies
         run: |
           npm install --legacy-peer-deps --verbose
@@ -56,16 +65,7 @@ jobs:
 
       - name: Run Tests
         run: npm test
-        continue-on-error: true
-
-      - name: Verify Build Output
-        run: |
-          if [ -d "dist" ]; then
-            echo "✓ Build artifact 'dist' directory exists"
-            ls -la dist/
-          else
-            echo "⚠ No dist directory found"
-          fi
+        continue-on-error: true   
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
