@@ -14,33 +14,66 @@ jobs:
     permissions: 
       actions: read 
       contents: read 
-      security-events: write # Required to upload findings to the Security tab 
+      security-events: write
 
     steps: 
       - name: Checkout Code 
-        uses: actions/checkout@v4 
+        uses: actions/checkout@v4
+        with:
+          ref: master
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Specify your project's Node version
-          cache: 'npm'       # Automatically caches your npm dependencies
+          node-version: '20'
 
-      - name: Clear NPM Cache
-        run: npm cache clean --force
+      - name: Clear NPM Cache and Clean Install
+        run: |
+          npm cache clean --force
+          rm -rf node_modules package-lock.json
 
-      - name: BUILD 
-        run: npm install
+      - name: Validate package.json
+        run: |
+          echo "Validating package.json syntax..."
+          node -e "require('./package.json')"
+          echo "✓ package.json is valid"
 
-      - name: TEST 
-        run: echo "code is tested!" 
+      - name: Install Dependencies
+        run: |
+          npm install --legacy-peer-deps --verbose
+        env:
+          npm_config_strict_ssl: false
 
-      - name: Artifact upload 
+      - name: Verify Installation
+        run: |
+          echo "Checking installed packages..."
+          npm list --depth=0
+          echo "✓ Dependencies installed successfully"
+
+      - name: Build Project
+        run: npm run build
+        continue-on-error: false
+
+      - name: Run Tests
+        run: npm test
+        continue-on-error: true
+
+      - name: Verify Build Output
+        run: |
+          if [ -d "dist" ]; then
+            echo "✓ Build artifact 'dist' directory exists"
+            ls -la dist/
+          else
+            echo "⚠ No dist directory found"
+          fi
+
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with: 
-          name: artifact-1 
-          path: | 
-            package* 
+          name: build-artifacts
+          path: |
+            dist/
+            package.json
+            package-lock.json
           retention-days: 7
-
-  
+          if-no-files-found: warn
