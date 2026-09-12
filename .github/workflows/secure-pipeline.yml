@@ -20,6 +20,12 @@ jobs:
       - name: Checkout Code 
         uses: actions/checkout@v4 
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Specify your project's Node version
+          cache: 'npm'       # Automatically caches your npm dependencies
+
       - name: BUILD 
         run: npm install 
 
