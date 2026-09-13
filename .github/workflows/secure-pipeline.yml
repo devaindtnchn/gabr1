@@ -10,7 +10,12 @@ jobs:
   build: 
     name: BUILD-JOB 
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    runs-on: ubuntu-slim
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node-version: [18, 20, 22]
 
     permissions: 
       actions: read 
@@ -63,27 +68,9 @@ jobs:
         run: npm run build
         continue-on-error: false
 
-
-  test:
-    runs-on: ubuntu-slim
-    needs: build
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Cache Dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-
       - name: Test
         run: echo "code is tested"
 
-  deploy:
-    runs-on: ubuntu-slim
-    needs: test
-    steps:
       - name: deploy
         run: echo my code is deployed
 
