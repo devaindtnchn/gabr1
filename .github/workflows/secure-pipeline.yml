@@ -80,7 +80,7 @@ jobs:
           if-no-files-found: warn
 
       - name: deploy
-        run: ech0 my code is deployed
+        run: echo my code is deployed
 
       - name: rollback
         if: failure()
