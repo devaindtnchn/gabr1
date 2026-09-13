@@ -78,3 +78,7 @@ jobs:
             package-lock.json
           retention-days: 7
           if-no-files-found: warn
+
+      - name: deploy
+        run: echo my code is deployed
+      
