@@ -7,7 +7,7 @@ on:
   workflow_dispatch: 
 
 jobs: 
-  build_and_package: 
+  build: 
     name: BUILD-JOB 
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-slim
@@ -63,30 +63,10 @@ jobs:
         run: npm run build
         continue-on-error: false
 
-      - name: Run Tests
-        run: npm test
-        continue-on-error: true   
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with: 
-          name: build-artifacts
-          path: |
-            dist/
-            package.json
-            package-lock.json
-          retention-days: 7
-          if-no-files-found: warn
-
-      - name: deploy
-        run: echo my code is deployed
-
-      - name: rollback
-        if: failure()
-        run: echo rollback done
 
   test:
     runs-on: ubuntu-slim
+    needs: build
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -100,19 +80,9 @@ jobs:
       - name: Test
         run: echo "code is tested"
 
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            dist/
-            package.json
-            package-lock.json
-          retention-days: 7
-          if-no-files-found: warn
-
   deploy:
     runs-on: ubuntu-slim
+    needs: test
     steps:
       - name: deploy
         run: echo my code is deployed
