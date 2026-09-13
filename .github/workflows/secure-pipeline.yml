@@ -9,7 +9,8 @@ on:
 jobs: 
   build_and_package: 
     name: BUILD-JOB 
-    runs-on: self-hosted 
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-slim
 
     permissions: 
       actions: read 
