@@ -87,7 +87,6 @@ jobs:
 
   test:
     runs-on: ubuntu-slim
-    needs: build_and_package
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
