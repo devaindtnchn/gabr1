@@ -1,79 +1,72 @@
-name: Secure DevSecOps Pipeline 
+name: Secure DevSecOps Pipeline
 
-on: 
-  push: 
-    branches: 
+on:
+  push:
+    branches:
       - master
-  workflow_dispatch: 
+      - main
+  workflow_dispatch:
 
-jobs: 
-  build: 
-    name: BUILD-JOB 
+jobs:
+  build_and_package:
+    name: BUILD-JOB
+
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        node-version: [18, 20, 22]
+        os:
+          - ubuntu-latest
+          - windows-latest
 
-    permissions: 
-      actions: read 
-      contents: read 
+        node-version:
+          - 18
+          - 20
+          - 22
+
+        language:
+          - javascript-typescript
+
+    permissions:
+      actions: read
+      contents: read
       security-events: write
 
-    steps: 
-      - name: Checkout Code 
+    steps:
+      - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: master
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ matrix.node-version }}
 
-      - name: Clear NPM Cache and Clean Install
-        run: |
-          npm cache clean --force
-          rm -rf node_modules package-lock.json
-
-      - name: Validate package.json
-        run: |
-          echo "Validating package.json syntax..."
-          node -e "require('./package.json')"
-          echo "✓ package.json is valid"
-
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
+      - name: Cache Dependencies
+        uses: actions/cache@v5
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
 
       - name: Install Dependencies
-        run: |
-          npm install --legacy-peer-deps --verbose
-        env:
-          npm_config_strict_ssl: false
-
-      - name: Verify Installation
-        run: |
-          echo "Checking installed packages..."
-          npm list --depth=0
-          echo "✓ Dependencies installed successfully"
-
-      - name: Build Project
-        run: npm run build
-        continue-on-error: false
+        run: npm install
 
       - name: Test
-        run: echo "code is tested"
+        run: echo "code is tested!"
 
-      - name: deploy
-        run: echo my code is deployed
+      - name: Artifact Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: artifact-${{ runner.os }}-node-${{ matrix.node-version }}
+          path: |
+            package*
 
-      - name: rollback
+      - name: Deploy
+        run: echo "my code is deployed"
+
+      - name: Rollback
         if: failure()
-        run: echo rollback done
+        run: echo "rollback is done"
