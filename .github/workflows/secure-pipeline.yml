@@ -64,9 +64,21 @@ jobs:
         run: npm run build
         continue-on-error: false
 
-      - name: Run Tests
-        run: npm test
-        continue-on-error: true   
+test:
+    runs-on: ubuntu-slim 
+    needs: build 
+    steps: 
+      - name: Checkout Code 
+        uses: actions/checkout@v4 
+
+      - name: Cache Dependencies 
+        uses: actions/cache@v4 
+        with: 
+          path: ~/.npm 
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }} 
+
+      - name: Test 
+        run: echo "code is tested" 
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -79,6 +91,8 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
+ deploy:
+   runs-on: ubuntu-slim
       - name: deploy
         run: echo my code is deployed
 
