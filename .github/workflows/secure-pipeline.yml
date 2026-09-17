@@ -41,6 +41,19 @@ jobs:
           echo "sha512-$(openssl dgst -sha512 -binary /tmp/s.tgz | openssl base64 -A)"
           echo "=== who served it ==="
           curl -sSI "$URL" | grep -iE 'server|via|x-cache|x-served|age|content-encoding|content-length'
+
+      - name: Check registry integrity
+        run: |
+          node -e '
+          fetch("https://registry.npmjs.org/scheduler/0.23.0")
+            .then(r => r.json())
+            .then(j => {
+              console.log("registry integrity:", j.dist.integrity);
+              console.log("registry tarball  :", j.dist.tarball);
+            });'
+          echo "lockfile integrity:"
+          grep -A2 '"node_modules/scheduler"' package-lock.json | grep integrity || \
+          grep -B1 -A5 'scheduler-0.23.0' package-lock.json | grep integrity
       
       - name: BUILD
         run: |
