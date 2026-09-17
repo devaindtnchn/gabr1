@@ -19,6 +19,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+
+      - name: Diagnose
+        run: |
+          echo "=== disk ==="; df -h; df -h /tmp || true
+          echo "=== npm ==="; npm --version; node --version
+          echo "=== registry/proxy ==="
+          npm config get registry
+          npm config get proxy; npm config get https-proxy
+          env | grep -iE 'proxy|npm_config' || true
+          echo "=== npmrc ==="; cat ~/.npmrc .npmrc 2>/dev/null || true
       
       - name: BUILD
         run: |
