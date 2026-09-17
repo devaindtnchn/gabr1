@@ -19,10 +19,11 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org/'
-          cache: 'npm'
 
       - name: BUILD
-        run: npm ci
+        run: |
+          rm -f package-lock.json
+          npm install --registry=https://registry.npmjs.org/
 
       - name: TEST
         run: echo "code is tested!"
