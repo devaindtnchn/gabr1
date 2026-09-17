@@ -34,7 +34,7 @@ jobs:
         run: |
           URL=https://registry.npmjs.org/scheduler/-/scheduler-0.23.0.tgz
           curl -sSL "$URL" -o /tmp/s.tgz
-          echo "=== bytes ==="; wc -c < //s.tgz
+          echo "=== bytes ==="; wc -c < /tmp/s.tgz
           echo "=== type  ==="; file /tmp/s.tgz
           echo "=== head  ==="; head -c 300 /tmp/s.tgz | xxd | head
           echo "=== integrity (should equal sha512-CtuP6ZKMUerjfoO/IQda5A7bzjDG74CRYcr8NtF0i/Pbs/ZcCQQaCR+OlY71CQYP7iZraMqrz23oXZw+88nRjQ==) ==="
