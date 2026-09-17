@@ -44,4 +44,4 @@ jobs:
           name: artifact-1
           path: |
             package*
-          retention-days: 7
+          retention-days: 6
