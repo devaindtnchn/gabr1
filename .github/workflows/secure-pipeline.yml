@@ -5,7 +5,7 @@ on:
     branches:
       - master
   workflow_dispatch:
-  
+
 jobs:
   build_and_package:
     name: BUILD-JOB
@@ -18,55 +18,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
           cache: 'npm'
 
-      - name: Diagnose
-        run: |
-          echo "=== disk ==="; df -h; df -h /tmp || true
-          echo "=== npm ==="; npm --version; node --version
-          echo "=== registry/proxy ==="
-          npm config get registry
-          npm config get proxy; npm config get https-proxy
-          env | grep -iE 'proxy|npm_config' || true
-          echo "=== npmrc ==="; cat ~/.npmrc .npmrc 2>/dev/null || true
-
-      - name: Probe tarball
-        run: |
-          URL=https://registry.npmjs.org/scheduler/-/scheduler-0.23.0.tgz
-          curl -sSL "$URL" -o /tmp/s.tgz
-          echo "=== bytes ==="; wc -c < /tmp/s.tgz
-          echo "=== type  ==="; file /tmp/s.tgz
-          echo "=== head  ==="; head -c 300 /tmp/s.tgz | xxd | head
-          echo "=== integrity (should equal sha512-CtuP6ZKMUerjfoO/IQda5A7bzjDG74CRYcr8NtF0i/Pbs/ZcCQQaCR+OlY71CQYP7iZraMqrz23oXZw+88nRjQ==) ==="
-          echo "sha512-$(openssl dgst -sha512 -binary /tmp/s.tgz | openssl base64 -A)"
-          echo "=== who served it ==="
-          curl -sSI "$URL" | grep -iE 'server|via|x-cache|x-served|age|content-encoding|content-length'
-
-      - name: Check registry integrity
-        run: |
-          node -e '
-          fetch("https://registry.npmjs.org/scheduler/0.23.0")
-            .then(r => r.json())
-            .then(j => {
-              console.log("registry integrity:", j.dist.integrity);
-              console.log("registry tarball  :", j.dist.tarball);
-            });'
-          echo "lockfile integrity:"
-          grep -A2 '"node_modules/scheduler"' package-lock.json | grep integrity || \
-          grep -B1 -A5 'scheduler-0.23.0' package-lock.json | grep integrity
-      
       - name: BUILD
-        run: |
-          npm cache clean --force
-          npm install
+        run: npm ci
 
       - name: TEST
         run: echo "code is tested!"
-      
+
       - name: Artifact upload
         uses: actions/upload-artifact@v4
         with:
           name: artifact-1
           path: |
             package*
-          retention-days: 6
+          retention-days: 7
