@@ -23,7 +23,7 @@ jobs:
       - name: BUILD
         run: |
           npm cache clean --force
-          npm ci
+          npm install
 
       - name: TEST
         run: echo "code is tested!"
