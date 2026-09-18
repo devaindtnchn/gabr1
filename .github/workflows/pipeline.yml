@@ -9,7 +9,7 @@ on:
 jobs:
   build_and_package:
     name: BUILD-JOB
-    runs-on: ubuntu-slim
+    runs-on: self-hosted
     permissions:
        actions: read
        contents: read
