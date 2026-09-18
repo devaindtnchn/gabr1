@@ -10,6 +10,10 @@ jobs:
   build_and_package:
     name: BUILD-JOB
     runs-on: ubuntu-slim
+    permissions:
+       actions: read
+       contents: read
+       security-events: write # Required to upload findings to the Security tab
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
