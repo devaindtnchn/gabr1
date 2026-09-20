@@ -11,6 +11,7 @@ jobs:
     name: BUILD-JOB
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-slim
+    
     permissions:
        actions: read
        contents: read
