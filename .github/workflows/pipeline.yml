@@ -4,7 +4,24 @@ on:
   push:
     branches:
       - master
+      - main
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+          - dev
+          - test
+      deploy_docs:
+        description: 'Build and deploy documentation?'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   build_and_package:
@@ -15,7 +32,7 @@ jobs:
     permissions:
       actions: read
       contents: read
-      security-events: write # Required to upload findings to the Security tab
+      security-events: write
 
     steps:
       - name: Checkout Code
@@ -24,30 +41,32 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org/'
+          node-version: ${{ matrix.node-version }}
 
-      - name: Cache npm cache directory
-        uses: actions/cache@v4
+      - name: Cache Dependencies
+        uses: actions/cache@v5
         with:
-          path: ${{ github.workspace }}/.npm-cache
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
 
-      - name: BUILD
-        run: |
-          npm config set cache "${{ github.workspace }}/.npm-cache"
-          rm -f package-lock.json
-          npm install --registry=https://registry.npmjs.org/
+      - name: Install Dependencies
+        run: npm install
 
-      - name: TEST
+      - name: Test
         run: echo "code is tested!"
 
-      - name: Artifact upload
-        uses: actions/upload-artifact@v4
+      - name: Artifact Upload
+        uses: actions/upload-artifact@v7
         with:
-          name: artifact-1
+          name: artifact-${{ runner.os }}-node-${{ matrix.node-version }}
           path: |
             package*
-          retention-days: 7
+
+      - name: Deploy
+        run: echo "my code is deployed"
+
+      - name: Rollback
+        if: failure()
+        run: echo "rollback is done"
